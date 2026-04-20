@@ -33,8 +33,23 @@ class ALSRecommender(BaseRecommender):
         item_user = sp.csr_matrix((vals, (rows, cols)), shape=(n_items, n_users))
 
         self.model.fit(item_user)
-        self._user_emb = np.array(self.model.user_factors)
-        self._item_emb = np.array(self.model.item_factors)
+
+        user_factors = np.array(self.model.user_factors)
+        item_factors = np.array(self.model.item_factors)
+
+        # implicit may return fewer rows than n_users/n_items if some nodes
+        # have no training interactions. Pad with zeros so indices stay valid.
+        if user_factors.shape[0] < n_users:
+            pad = np.zeros((n_users - user_factors.shape[0], user_factors.shape[1]),
+                           dtype=np.float32)
+            user_factors = np.vstack([user_factors, pad])
+        if item_factors.shape[0] < n_items:
+            pad = np.zeros((n_items - item_factors.shape[0], item_factors.shape[1]),
+                           dtype=np.float32)
+            item_factors = np.vstack([item_factors, pad])
+
+        self._user_emb = user_factors
+        self._item_emb = item_factors
 
     def get_user_embeddings(self) -> np.ndarray:
         return self._user_emb
