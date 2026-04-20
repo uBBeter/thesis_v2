@@ -14,7 +14,7 @@
 
 | Dataset | Category | File |
 |---------|----------|------|
-| Amazon Beauty | Beauty products | `data/raw/beauty/All_Beauty.jsonl.gz` |
+| Amazon Toys & Games | Toy/game products | `data/raw/toys/Toys_and_Games.jsonl.gz` |
 | Amazon CDs & Vinyl | Music | `data/raw/cds/CDs_and_Vinyl.jsonl.gz` |
 
 **Preprocessing pipeline**:
