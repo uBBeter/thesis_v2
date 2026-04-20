@@ -39,7 +39,7 @@ bash setup.sh
 
 ## Quickstart: View Results Locally
 
-Pre-trained weights and metrics are available on HuggingFace Hub. To download weights and see recommendations without training anything:
+Pre-trained weights and metrics are available on HuggingFace Hub at [ubbeter/thesis-gnn-recsys](https://huggingface.co/ubbeter/thesis-gnn-recsys). To download weights and see recommendations without training anything:
 
 ```bash
 # Download weights and show top-10 recommendations for 5 random users
