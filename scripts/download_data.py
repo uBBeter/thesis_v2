@@ -52,7 +52,7 @@ def download_file(url: str, dest: Path, chunk_size: int = 1 << 20):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", choices=["beauty", "cds", "all"], default="all")
+    parser.add_argument("--dataset", choices=["toys", "cds", "all"], default="all")
     args = parser.parse_args()
 
     targets = list(DATASETS.keys()) if args.dataset == "all" else [args.dataset]
