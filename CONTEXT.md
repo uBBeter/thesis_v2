@@ -26,6 +26,8 @@
 
 Output: `data/processed/{dataset}/dataset.pkl` + `graph.pt`
 
+**Note**: Amazon All_Beauty (2023) was dropped — too sparse (avg 1.1 reviews/user, k=10 core leaves 1 user). Replaced with Toys_and_Games which is denser.
+
 ---
 
 ## Models
