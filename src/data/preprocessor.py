@@ -72,6 +72,11 @@ def leave_one_out_split(
         history = set(items)
         candidates = list(all_items - history)
 
+        if len(candidates) < n_neg:
+            for item in items:
+                train_rows.append({"user_idx": user_idx, "item_idx": item})
+            continue
+
         test_pos = items[-1]
         val_pos = items[-2]
         train_items = items[:-2]
