@@ -21,6 +21,28 @@ Bachelor thesis comparing Graph Neural Network architectures against a matrix fa
 
 Both datasets are from the [Amazon Reviews 2023](https://amazon-reviews-2023.github.io/) collection and preprocessed with k=10 core filtering and leave-one-out splits.
 
+## Results
+
+### Toys & Games
+
+| Model | Recall@10 | Recall@20 | NDCG@10 | NDCG@20 | Precision@10 | Precision@20 |
+|-------|-----------|-----------|---------|---------|--------------|--------------|
+| **LightGCN** | **0.4687** | **0.6386** | **0.2847** | **0.3274** | **0.0469** | **0.0319** |
+| NGCF | 0.4507 | 0.6245 | 0.2649 | 0.3087 | 0.0451 | 0.0312 |
+| SGL | 0.4367 | 0.5882 | 0.2730 | 0.3111 | 0.0437 | 0.0294 |
+| SimGCL | 0.3436 | 0.4652 | 0.2204 | 0.2510 | 0.0344 | 0.0233 |
+| ALS | 0.3467 | 0.4197 | 0.3080 | 0.3262 | 0.0347 | 0.0210 |
+
+### CDs & Vinyl
+
+| Model | Recall@10 | Recall@20 | NDCG@10 | NDCG@20 | Precision@10 | Precision@20 |
+|-------|-----------|-----------|---------|---------|--------------|--------------|
+| **LightGCN** | **0.6930** | **0.8251** | 0.4539 | 0.4874 | **0.0693** | **0.0413** |
+| NGCF | 0.6522 | 0.7942 | 0.4143 | 0.4504 | 0.0652 | 0.0397 |
+| SGL | 0.6867 | 0.8100 | **0.4585** | **0.4898** | 0.0687 | 0.0405 |
+| SimGCL | 0.5754 | 0.6898 | 0.3983 | 0.4272 | 0.0575 | 0.0345 |
+| ALS | 0.1887 | 0.2787 | 0.1403 | 0.1627 | 0.0188 | 0.0139 |
+
 ---
 
 ## Setup
