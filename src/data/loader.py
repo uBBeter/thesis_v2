@@ -20,9 +20,9 @@ def load_amazon(path: str | Path) -> pd.DataFrame:
                 continue
             records.append({
                 "user": obj.get("reviewerID") or obj.get("user_id"),
-                "item": obj.get("asin") or obj.get("item_id"),
+                "item": obj.get("parent_asin") or obj.get("asin") or obj.get("item_id"),
                 "rating": float(obj.get("overall", obj.get("rating", 1.0))),
-                "timestamp": int(obj.get("unixReviewTime", obj.get("timestamp", 0))),
+                "timestamp": int(obj.get("unixReviewTime") or obj.get("timestamp") or 0),
             })
     df = pd.DataFrame(records).dropna(subset=["user", "item"])
     return df
