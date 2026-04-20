@@ -47,12 +47,12 @@ python scripts/demo.py \
     --model lightgcn \
     --dataset toys \
     --config configs/lightgcn.yaml \
-    --hf-repo sgrigorij142/thesis-gnn-recsys
+    --hf-repo ubbeter/thesis-gnn-recsys
 
 # Try other models
-python scripts/demo.py --model ngcf    --dataset toys --config configs/ngcf.yaml    --hf-repo sgrigorij142/thesis-gnn-recsys
-python scripts/demo.py --model sgl     --dataset toys --config configs/sgl.yaml     --hf-repo sgrigorij142/thesis-gnn-recsys
-python scripts/demo.py --model simgcl  --dataset toys --config configs/simgcl.yaml  --hf-repo sgrigorij142/thesis-gnn-recsys
+python scripts/demo.py --model ngcf    --dataset toys --config configs/ngcf.yaml    --hf-repo ubbeter/thesis-gnn-recsys
+python scripts/demo.py --model sgl     --dataset toys --config configs/sgl.yaml     --hf-repo ubbeter/thesis-gnn-recsys
+python scripts/demo.py --model simgcl  --dataset toys --config configs/simgcl.yaml  --hf-repo ubbeter/thesis-gnn-recsys
 ```
 
 To print the full results table for a dataset:
