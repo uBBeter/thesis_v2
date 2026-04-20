@@ -19,14 +19,14 @@ RAW_DIR = Path(__file__).parent.parent / "data" / "raw"
 DATASETS = {
     "beauty": {
         "url": (
-            "https://datarepo.eng.ucsd.edu/mcauley_group/data/amazon_2023/raw/review_categories/"
+            "https://mcauleylab.ucsd.edu/public_datasets/data/amazon_2023/raw/review_categories/"
             "All_Beauty.jsonl.gz"
         ),
         "dest": RAW_DIR / "beauty" / "All_Beauty.jsonl.gz",
     },
     "cds": {
         "url": (
-            "https://datarepo.eng.ucsd.edu/mcauley_group/data/amazon_2023/raw/review_categories/"
+            "https://mcauleylab.ucsd.edu/public_datasets/data/amazon_2023/raw/review_categories/"
             "CDs_and_Vinyl.jsonl.gz"
         ),
         "dest": RAW_DIR / "cds" / "CDs_and_Vinyl.jsonl.gz",
