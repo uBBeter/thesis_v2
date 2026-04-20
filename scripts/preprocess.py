@@ -56,7 +56,7 @@ def process(name: str, df_loader, out_name: str):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", choices=["beauty", "cds", "all"], default="all")
+    parser.add_argument("--dataset", choices=["toys", "cds", "all"], default="all")
     args = parser.parse_args()
 
     targets = list(RAW_FILES.keys()) if args.dataset == "all" else [args.dataset]
