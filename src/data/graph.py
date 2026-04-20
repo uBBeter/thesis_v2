@@ -35,7 +35,9 @@ def build_graph(dataset: Dataset) -> Data:
 
     # Symmetric normalization: D^{-1/2} A D^{-1/2}
     degree = np.array(adj.sum(axis=1)).flatten()
-    d_inv_sqrt = np.where(degree > 0, degree ** -0.5, 0.0)
+    d_inv_sqrt = np.zeros_like(degree)
+    nonzero = degree > 0
+    d_inv_sqrt[nonzero] = degree[nonzero] ** -0.5
     D_inv_sqrt = sp.diags(d_inv_sqrt)
     norm_adj = D_inv_sqrt @ adj @ D_inv_sqrt
     norm_adj = norm_adj.tocoo()
