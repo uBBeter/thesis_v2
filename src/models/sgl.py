@@ -93,6 +93,7 @@ class SGL(LightGCN):
         device = torch.device(device)
         self.to(device)
         graph = graph.to(device)
+        self._graph = graph
 
         optimizer = torch.optim.Adam(self.parameters(), lr=lr)
         train = dataset.train
