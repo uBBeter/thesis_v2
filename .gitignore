@@ -23,8 +23,9 @@ build/
 # Project data and results
 data/raw/
 data/processed/
-results/*.pt
-results/*.pth
+# Uncomment to exclude model checkpoints from git (transfer via scp instead)
+# results/**/*.pt
+# results/**/*.pth
 
 # OS
 .DS_Store
