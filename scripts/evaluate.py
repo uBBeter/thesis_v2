@@ -3,7 +3,7 @@ Load a saved checkpoint and evaluate on test set.
 
 Usage:
   python scripts/evaluate.py --model lightgcn --dataset beauty --device cpu
-  python scripts/evaluate.py --all --dataset beauty
+  python scripts/evaluate.py --all --dataset cds
 """
 import argparse
 import json
@@ -40,7 +40,7 @@ def print_table(results: dict):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", choices=ALL_MODELS)
-    parser.add_argument("--dataset", choices=["beauty", "yelp"], required=True)
+    parser.add_argument("--dataset", choices=["beauty", "cds"], required=True)
     parser.add_argument("--all", action="store_true")
     parser.add_argument("--device", default="cpu")
     args = parser.parse_args()

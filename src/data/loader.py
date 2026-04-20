@@ -26,34 +26,3 @@ def load_amazon(path: str | Path) -> pd.DataFrame:
             })
     df = pd.DataFrame(records).dropna(subset=["user", "item"])
     return df
-
-
-def load_yelp(path: str | Path) -> pd.DataFrame:
-    """Load Yelp review JSON into a DataFrame with columns: user, item, rating, timestamp."""
-    import time
-    from datetime import datetime
-
-    path = Path(path)
-    records = []
-    with open(path, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                obj = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            date_str = obj.get("date", "")
-            try:
-                ts = int(datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S").timestamp())
-            except Exception:
-                ts = 0
-            records.append({
-                "user": obj.get("user_id"),
-                "item": obj.get("business_id"),
-                "rating": float(obj.get("stars", 1.0)),
-                "timestamp": ts,
-            })
-    df = pd.DataFrame(records).dropna(subset=["user", "item"])
-    return df

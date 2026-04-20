@@ -3,7 +3,7 @@ Train a single model on a dataset.
 
 Usage:
   python scripts/train.py --config configs/lightgcn.yaml --dataset beauty --device cpu
-  python scripts/train.py --config configs/sgl.yaml --dataset yelp --device cuda
+  python scripts/train.py --config configs/sgl.yaml --dataset cds --device cuda
 """
 import argparse
 import json
@@ -53,7 +53,7 @@ def build_model(cfg: dict, n_users: int, n_items: int):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
-    parser.add_argument("--dataset", choices=["beauty", "yelp"], required=True)
+    parser.add_argument("--dataset", choices=["beauty", "cds"], required=True)
     parser.add_argument("--device", default="cpu")
     args = parser.parse_args()
 
