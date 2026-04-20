@@ -1,0 +1,5 @@
+model: als
+factors: 64
+iterations: 50
+regularization: 0.01
+use_gpu: false

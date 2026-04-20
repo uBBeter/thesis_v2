@@ -1,0 +1,164 @@
+"""
+SGL: Self-supervised Graph Learning for Recommendation
+Wu et al., 2021 (https://arxiv.org/abs/2010.10783)
+
+Extends LightGCN with self-supervised contrastive learning.
+Two augmented graph views are created via node dropout or edge dropout.
+An InfoNCE loss maximizes agreement between views for the same user/item.
+"""
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch_geometric.data import Data
+
+from .lightgcn import LightGCN
+from ..data.preprocessor import Dataset
+from ..utils.helpers import EarlyStopping, save_checkpoint
+
+
+def _augment_edge_dropout(graph: Data, p: float, rng: np.random.Generator) -> Data:
+    """Randomly drop edges with probability p."""
+    n_edges = graph.edge_index.size(1)
+    keep = rng.random(n_edges) > p
+    keep_t = torch.tensor(keep, device=graph.edge_index.device)
+    new_graph = Data(
+        edge_index=graph.edge_index[:, keep_t],
+        edge_weight=graph.edge_weight[keep_t],
+    )
+    new_graph.n_users = graph.n_users
+    new_graph.n_items = graph.n_items
+    new_graph.n_nodes = graph.n_nodes
+    return new_graph
+
+
+def _augment_node_dropout(graph: Data, p: float, n_nodes: int,
+                           rng: np.random.Generator) -> Data:
+    """Drop all edges incident to randomly dropped nodes."""
+    keep_nodes = torch.tensor(rng.random(n_nodes) > p,
+                              device=graph.edge_index.device)
+    row, col = graph.edge_index
+    mask = keep_nodes[row] & keep_nodes[col]
+    new_graph = Data(
+        edge_index=graph.edge_index[:, mask],
+        edge_weight=graph.edge_weight[mask],
+    )
+    new_graph.n_users = graph.n_users
+    new_graph.n_items = graph.n_items
+    new_graph.n_nodes = graph.n_nodes
+    return new_graph
+
+
+class SGL(LightGCN):
+    """
+    SGL adds a contrastive loss on top of LightGCN.
+    Uses edge dropout augmentation by default (best in the paper).
+    """
+
+    def __init__(self, n_users: int, n_items: int, dim: int = 64,
+                 n_layers: int = 3, reg: float = 1e-4,
+                 ssl_temp: float = 0.2, ssl_lambda: float = 0.1,
+                 aug_type: str = "edge",  # "edge" or "node"
+                 aug_ratio: float = 0.1):
+        super().__init__(n_users, n_items, dim, n_layers, reg)
+        self.ssl_temp = ssl_temp
+        self.ssl_lambda = ssl_lambda
+        self.aug_type = aug_type
+        self.aug_ratio = aug_ratio
+
+    def _info_nce(self, z1: torch.Tensor, z2: torch.Tensor,
+                  indices: torch.Tensor) -> torch.Tensor:
+        """
+        InfoNCE loss for user or item nodes.
+        z1, z2: full embedding matrices [n_nodes, dim]
+        indices: which nodes to compute loss for
+        """
+        v1 = F.normalize(z1[indices], dim=1)
+        v2 = F.normalize(z2[indices], dim=1)
+        # Positive pair: same node in two views
+        pos = (v1 * v2).sum(dim=1) / self.ssl_temp
+        # All pairs within view1 as negatives
+        neg = (v1 @ v2.T) / self.ssl_temp
+        loss = -pos + torch.logsumexp(neg, dim=1)
+        return loss.mean()
+
+    def _augment(self, graph: Data, rng: np.random.Generator) -> Data:
+        if self.aug_type == "edge":
+            return _augment_edge_dropout(graph, self.aug_ratio, rng)
+        return _augment_node_dropout(graph, self.aug_ratio, graph.n_nodes, rng)
+
+    def fit(self, dataset: Dataset, graph: Data, n_epochs: int = 100, lr: float = 1e-3,
+            batch_size: int = 2048, device: str = "cpu", checkpoint_path: str = None,
+            val_df=None, patience: int = 10, **kwargs):
+        device = torch.device(device)
+        self.to(device)
+        graph = graph.to(device)
+
+        optimizer = torch.optim.Adam(self.parameters(), lr=lr)
+        train = dataset.train
+        users_arr = train["user_idx"].values
+        items_arr = train["item_idx"].values
+        n_items = dataset.n_items
+        n_users = dataset.n_users
+
+        stopper = EarlyStopping(patience=patience)
+        rng = np.random.default_rng(42)
+
+        for epoch in range(1, n_epochs + 1):
+            self.train()
+            # Build two augmented views for this epoch
+            g1 = self._augment(graph, rng)
+            g2 = self._augment(graph, rng)
+            embs1 = self._propagate(g1)
+            embs2 = self._propagate(g2)
+            embs_main = self._propagate(graph)
+
+            perm = rng.permutation(len(users_arr))
+            total_loss = 0.0
+            n_batches = 0
+            for start in range(0, len(perm), batch_size):
+                idx = perm[start: start + batch_size]
+                u = torch.tensor(users_arr[idx], device=device)
+                p = torch.tensor(items_arr[idx], device=device)
+                neg_items = rng.integers(0, n_items, size=len(idx))
+                n_t = torch.tensor(neg_items, device=device)
+
+                bpr = self.bpr_loss(embs_main, u, p, n_t)
+
+                # Contrastive loss on unique users and items in batch
+                u_unique = u.unique()
+                p_unique = (p + n_users).unique()
+                ssl = (self._info_nce(embs1, embs2, u_unique) +
+                       self._info_nce(embs1, embs2, p_unique))
+
+                loss = bpr + self.ssl_lambda * ssl
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+                # Re-compute main embeddings after step (needed for next batch BPR)
+                embs_main = self._propagate(graph)
+
+                total_loss += loss.item()
+                n_batches += 1
+
+            if val_df is not None and epoch % 5 == 0:
+                self.eval()
+                with torch.no_grad():
+                    metrics = self.evaluate(val_df)
+                recall20 = metrics["Recall@20"]
+                is_best = stopper.step(recall20)
+                print(f"Epoch {epoch:3d} | loss={total_loss/n_batches:.4f} | "
+                      f"Recall@20={recall20:.4f}")
+                if is_best and checkpoint_path:
+                    save_checkpoint({"epoch": epoch, "state_dict": self.state_dict(),
+                                     "metrics": metrics}, checkpoint_path)
+                if stopper.should_stop:
+                    print(f"Early stopping at epoch {epoch}")
+                    break
+            else:
+                if epoch % 10 == 0:
+                    print(f"Epoch {epoch:3d} | loss={total_loss/n_batches:.4f}")
+
+        self._graph = graph
+        return self

@@ -17,6 +17,14 @@ build/
 *.parquet
 *.h5
 *.hdf5
+*.json.gz
+*.gz
+
+# Project data and results
+data/raw/
+data/processed/
+results/*.pt
+results/*.pth
 
 # OS
 .DS_Store

@@ -1,0 +1,9 @@
+model: ngcf
+dim: 64
+n_layers: 3
+dropout: 0.1
+reg: 1.0e-4
+lr: 1.0e-3
+n_epochs: 200
+batch_size: 2048
+patience: 10
