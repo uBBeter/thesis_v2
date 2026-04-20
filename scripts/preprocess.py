@@ -22,12 +22,12 @@ RAW_DIR = Path("data/raw")
 OUT_DIR = Path("data/processed")
 
 RAW_FILES = {
-    "beauty": RAW_DIR / "beauty" / "All_Beauty.jsonl.gz",
+    "toys": RAW_DIR / "toys" / "Toys_and_Games.jsonl.gz",
     "cds": RAW_DIR / "cds" / "CDs_and_Vinyl.jsonl.gz",
 }
 
 DISPLAY_NAMES = {
-    "beauty": "Amazon Beauty",
+    "toys": "Amazon Toys and Games",
     "cds": "Amazon CDs and Vinyl",
 }
 
