@@ -84,8 +84,6 @@ class SimGCL(LightGCN):
 
         for epoch in range(1, n_epochs + 1):
             self.train()
-            embs_main = self._propagate(graph)
-
             perm = rng.permutation(len(users_arr))
             total_loss = 0.0
             n_batches = 0
@@ -96,11 +94,11 @@ class SimGCL(LightGCN):
                 neg_items = rng.integers(0, n_items, size=len(idx))
                 n_t = torch.tensor(neg_items, device=device)
 
-                bpr = self.bpr_loss(embs_main, u, p, n_t)
-
-                # Two noisy views (no graph augmentation)
+                embs_main = self._propagate(graph)
                 z1 = self._propagate_with_noise(graph)
                 z2 = self._propagate_with_noise(graph)
+
+                bpr = self.bpr_loss(embs_main, u, p, n_t)
 
                 u_unique = u.unique()
                 p_unique = (p + n_users).unique()
@@ -112,7 +110,6 @@ class SimGCL(LightGCN):
                 loss.backward()
                 optimizer.step()
 
-                embs_main = self._propagate(graph)
                 total_loss += loss.item()
                 n_batches += 1
 
