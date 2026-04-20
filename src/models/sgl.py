@@ -107,12 +107,9 @@ class SGL(LightGCN):
 
         for epoch in range(1, n_epochs + 1):
             self.train()
-            # Build two augmented views for this epoch
+            # Build two augmented views for this epoch (topology fixed, embeddings recomputed per batch)
             g1 = self._augment(graph, rng)
             g2 = self._augment(graph, rng)
-            embs1 = self._propagate(g1)
-            embs2 = self._propagate(g2)
-            embs_main = self._propagate(graph)
 
             perm = rng.permutation(len(users_arr))
             total_loss = 0.0
@@ -124,9 +121,12 @@ class SGL(LightGCN):
                 neg_items = rng.integers(0, n_items, size=len(idx))
                 n_t = torch.tensor(neg_items, device=device)
 
+                embs_main = self._propagate(graph)
+                embs1 = self._propagate(g1)
+                embs2 = self._propagate(g2)
+
                 bpr = self.bpr_loss(embs_main, u, p, n_t)
 
-                # Contrastive loss on unique users and items in batch
                 u_unique = u.unique()
                 p_unique = (p + n_users).unique()
                 ssl = (self._info_nce(embs1, embs2, u_unique) +
@@ -136,9 +136,6 @@ class SGL(LightGCN):
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
-
-                # Re-compute main embeddings after step (needed for next batch BPR)
-                embs_main = self._propagate(graph)
 
                 total_loss += loss.item()
                 n_batches += 1
