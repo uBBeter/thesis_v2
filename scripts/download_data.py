@@ -17,12 +17,12 @@ from tqdm import tqdm
 RAW_DIR = Path(__file__).parent.parent / "data" / "raw"
 
 DATASETS = {
-    "beauty": {
+    "toys": {
         "url": (
             "https://mcauleylab.ucsd.edu/public_datasets/data/amazon_2023/raw/review_categories/"
-            "All_Beauty.jsonl.gz"
+            "Toys_and_Games.jsonl.gz"
         ),
-        "dest": RAW_DIR / "beauty" / "All_Beauty.jsonl.gz",
+        "dest": RAW_DIR / "toys" / "Toys_and_Games.jsonl.gz",
     },
     "cds": {
         "url": (
