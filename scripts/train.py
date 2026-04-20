@@ -74,7 +74,7 @@ def main():
     if model_name == "als":
         model.fit(dataset)
     else:
-        graph = torch.load(data_dir / "graph.pt")
+        graph = torch.load(data_dir / "graph.pt", weights_only=False)
         model.fit(
             dataset=dataset,
             graph=graph,
