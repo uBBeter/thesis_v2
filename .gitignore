@@ -27,6 +27,9 @@ data/processed/
 # results/**/*.pt
 # results/**/*.pth
 
+# Report (kept local only)
+report/
+
 # OS
 .DS_Store
 
