@@ -1,11 +1,3 @@
-"""
-SimGCL: Simple Graph Contrastive Learning for Recommendation
-Yu et al., 2022 (https://arxiv.org/abs/2112.08679)
-
-Key insight: graph augmentation (node/edge dropout in SGL) is unnecessary.
-Uniform noise added directly to embeddings at each layer creates sufficient views.
-Simpler and more effective than SGL.
-"""
 import numpy as np
 import torch
 import torch.nn as nn
@@ -18,11 +10,6 @@ from ..utils.helpers import EarlyStopping, save_checkpoint
 
 
 class SimGCL(LightGCN):
-    """
-    SimGCL: LightGCN + embedding-space noise for contrastive views.
-    No graph augmentation needed.
-    """
-
     def __init__(self, n_users: int, n_items: int, dim: int = 64,
                  n_layers: int = 3, reg: float = 1e-4,
                  ssl_temp: float = 0.2, ssl_lambda: float = 0.5,
@@ -33,10 +20,6 @@ class SimGCL(LightGCN):
         self.noise_eps = noise_eps
 
     def _propagate_with_noise(self, graph: Data) -> torch.Tensor:
-        """
-        LightGCN propagation where uniform noise is added to embeddings at each layer.
-        Two separate calls produce two independent noisy views.
-        """
         edge_index = graph.edge_index
         edge_weight = graph.edge_weight
         x = self.embedding.weight
@@ -47,7 +30,6 @@ class SimGCL(LightGCN):
             agg.scatter_add_(0, col.unsqueeze(1).expand(-1, x.size(1)),
                              edge_weight.unsqueeze(1) * x[row])
             x = agg
-            # Add uniform noise for contrastive view
             noise = torch.sign(x) * F.normalize(
                 torch.rand_like(x), dim=1
             ) * self.noise_eps
