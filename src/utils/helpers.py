@@ -33,7 +33,6 @@ class EarlyStopping:
         self.should_stop = False
 
     def step(self, metric: float) -> bool:
-        """Returns True if this is a new best."""
         if metric > self.best + self.min_delta:
             self.best = metric
             self.counter = 0
