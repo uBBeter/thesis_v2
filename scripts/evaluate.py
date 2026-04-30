@@ -1,10 +1,3 @@
-"""
-Load a saved checkpoint and evaluate on test set.
-
-Usage:
-  python scripts/evaluate.py --model lightgcn --dataset beauty --device cpu
-  python scripts/evaluate.py --all --dataset cds
-"""
 import argparse
 import json
 import pickle
