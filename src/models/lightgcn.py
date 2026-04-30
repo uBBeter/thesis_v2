@@ -1,11 +1,3 @@
-"""
-LightGCN: Simplifying and Powering Graph Convolution Network for Recommendation
-He et al., 2020 (https://arxiv.org/abs/2002.02126)
-
-Key insight: feature transformation and non-linear activation in NGCF are harmful for CF.
-Remove both. Only keep neighborhood aggregation.
-Final embedding = mean of all layer embeddings (instead of concatenation).
-"""
 import numpy as np
 import torch
 import torch.nn as nn
@@ -32,7 +24,6 @@ class LightGCN(nn.Module, BaseRecommender):
         nn.init.xavier_uniform_(self.embedding.weight)
 
     def _propagate(self, graph: Data) -> torch.Tensor:
-        """Run L layers of light graph convolution, return mean of all layers."""
         edge_index = graph.edge_index
         edge_weight = graph.edge_weight
         x = self.embedding.weight
@@ -44,7 +35,6 @@ class LightGCN(nn.Module, BaseRecommender):
                              edge_weight.unsqueeze(1) * x[row])
             x = agg
             all_embs.append(x)
-        # Mean pooling across layers (including layer 0)
         return torch.stack(all_embs, dim=0).mean(dim=0)
 
     def forward(self, graph: Data) -> torch.Tensor:
