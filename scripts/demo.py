@@ -1,21 +1,3 @@
-"""
-Load a trained model and show top-K recommendations for sample users.
-
-Weights are loaded from local results/ if present, otherwise downloaded
-from HuggingFace Hub automatically.
-
-Usage:
-  # Local weights
-  python scripts/demo.py --model lightgcn --dataset toys --config configs/lightgcn.yaml
-
-  # Download from HF Hub
-  python scripts/demo.py --model lightgcn --dataset toys --config configs/lightgcn.yaml \
-      --hf-repo your-username/thesis-gnn-recsys
-
-  # Show recommendations for specific users
-  python scripts/demo.py --model lightgcn --dataset toys --config configs/lightgcn.yaml \
-      --users 0 1 2 --topk 10
-"""
 import argparse
 import pickle
 import sys
@@ -77,10 +59,8 @@ def main():
     parser.add_argument("--model", required=True, choices=list(MODEL_REGISTRY))
     parser.add_argument("--dataset", required=True, choices=["toys", "cds"])
     parser.add_argument("--config", required=True)
-    parser.add_argument("--hf-repo", default=None,
-                        help="HuggingFace repo to download weights from if not local")
-    parser.add_argument("--users", nargs="+", type=int, default=None,
-                        help="User indices to recommend for (default: 5 random users)")
+    parser.add_argument("--hf-repo", default=None)
+    parser.add_argument("--users", nargs="+", type=int, default=None)
     parser.add_argument("--topk", type=int, default=10)
     parser.add_argument("--device", default="cpu")
     args = parser.parse_args()
@@ -88,7 +68,6 @@ def main():
     with open(args.config) as f:
         cfg = yaml.safe_load(f)
 
-    # Load dataset
     data_dir = PROCESSED_DIR / args.dataset
     if not (data_dir / "dataset.pkl").exists():
         print(f"Preprocessed data not found at {data_dir}. Run preprocess.py first.")
@@ -100,7 +79,6 @@ def main():
     idx2item = {v: k for k, v in dataset.item2idx.items()}
     idx2user = {v: k for k, v in dataset.user2idx.items()}
 
-    # Locate checkpoint
     ckpt_path = RESULTS_DIR / args.dataset / args.model / "best.pt"
     if not ckpt_path.exists():
         if args.hf_repo:
@@ -111,11 +89,9 @@ def main():
             print("Either run training first, or provide --hf-repo to download weights.")
             sys.exit(1)
 
-    # Build and load model
     model = build_model(cfg, dataset.n_users, dataset.n_items)
 
     if args.model == "als":
-        # ALS saves its own state differently — re-run training (fast, <1 min)
         print("ALS does not use a neural checkpoint. Re-fitting on training data...")
         model.fit(dataset)
     else:
@@ -127,11 +103,9 @@ def main():
         print(f"Loaded {args.model} checkpoint (epoch {ckpt['epoch']}, "
               f"val Recall@20={ckpt['metrics'].get('Recall@20', '?'):.4f})")
 
-    # Select users
     rng = np.random.default_rng(0)
     user_ids = args.users if args.users else rng.choice(dataset.n_users, size=5, replace=False).tolist()
 
-    # Build set of already-seen items per user (from train)
     user_train_items = (
         dataset.train.groupby("user_idx")["item_idx"]
         .apply(set).to_dict()
@@ -139,7 +113,6 @@ def main():
 
     U = model.get_user_embeddings()
     V = model.get_item_embeddings()
-    all_item_ids = np.arange(dataset.n_items)
 
     print(f"\n{'='*60}")
     print(f"Top-{args.topk} recommendations  |  model={args.model}  dataset={args.dataset}")
@@ -148,7 +121,7 @@ def main():
     for uid in user_ids:
         scores = U[uid] @ V.T
         seen = user_train_items.get(uid, set())
-        scores[list(seen)] = -np.inf       # exclude training items
+        scores[list(seen)] = -np.inf
         top_indices = np.argsort(scores)[::-1][:args.topk]
 
         original_user = idx2user.get(uid, str(uid))
