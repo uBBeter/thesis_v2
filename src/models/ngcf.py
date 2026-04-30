@@ -1,11 +1,3 @@
-"""
-NGCF: Neural Graph Collaborative Filtering
-Wang et al., 2019 (https://arxiv.org/abs/1905.08108)
-
-Key design: multi-layer GCN with learned feature transformation + LeakyReLU non-linearity.
-Final embedding = concatenation of all layer embeddings.
-Trained with BPR loss.
-"""
 import numpy as np
 import torch
 import torch.nn as nn
@@ -20,8 +12,6 @@ from ..utils.helpers import EarlyStopping, save_checkpoint
 
 
 class NGCFConv(nn.Module):
-    """Single NGCF propagation layer."""
-
     def __init__(self, dim: int, dropout: float = 0.1):
         super().__init__()
         self.W1 = nn.Linear(dim, dim, bias=True)
@@ -32,11 +22,9 @@ class NGCFConv(nn.Module):
     def forward(self, x: torch.Tensor, edge_index: torch.Tensor,
                 edge_weight: torch.Tensor) -> torch.Tensor:
         row, col = edge_index
-        # Aggregate neighbor embeddings (weighted by normalized adjacency)
         agg = torch.zeros_like(x)
         agg.scatter_add_(0, col.unsqueeze(1).expand(-1, x.size(1)),
                          edge_weight.unsqueeze(1) * x[row])
-        # Self interaction + neighbor interaction
         out = self.act(self.W1(agg) + self.W2(agg * x))
         return self.dropout(out)
 
@@ -57,7 +45,6 @@ class NGCF(nn.Module, BaseRecommender):
         self.n_layers = n_layers
 
     def forward(self, graph: Data) -> torch.Tensor:
-        """Return final embeddings [n_users+n_items, dim*(n_layers+1)]."""
         edge_index = graph.edge_index
         edge_weight = graph.edge_weight
         x = self.embedding.weight
@@ -65,7 +52,7 @@ class NGCF(nn.Module, BaseRecommender):
         for layer in self.layers:
             x = layer(x, edge_index, edge_weight)
             all_embs.append(x)
-        return torch.cat(all_embs, dim=1)  # concatenate all layers
+        return torch.cat(all_embs, dim=1)
 
     def bpr_loss(self, embs: torch.Tensor, users: torch.Tensor,
                  pos: torch.Tensor, neg: torch.Tensor) -> torch.Tensor:
@@ -75,7 +62,6 @@ class NGCF(nn.Module, BaseRecommender):
         pos_scores = (u * p).sum(dim=1)
         neg_scores = (u * n).sum(dim=1)
         bpr = -F.logsigmoid(pos_scores - neg_scores).mean()
-        # L2 regularization on initial embeddings only
         reg_loss = self.reg * (
             self.embedding(users).norm(2).pow(2) +
             self.embedding(self.n_users + pos).norm(2).pow(2) +
