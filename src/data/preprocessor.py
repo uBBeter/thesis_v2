@@ -5,10 +5,9 @@ from dataclasses import dataclass
 
 @dataclass
 class Dataset:
-    """Holds all processed splits and ID mappings."""
-    train: pd.DataFrame          # columns: user_idx, item_idx
-    val: pd.DataFrame            # columns: user_idx, pos_item, neg_items (list of 99)
-    test: pd.DataFrame           # columns: user_idx, pos_item, neg_items (list of 99)
+    train: pd.DataFrame
+    val: pd.DataFrame
+    test: pd.DataFrame
     n_users: int
     n_items: int
     user2idx: dict
@@ -16,7 +15,6 @@ class Dataset:
 
 
 def kcore_filter(df: pd.DataFrame, k: int = 10) -> pd.DataFrame:
-    """Iteratively remove users and items with fewer than k interactions."""
     while True:
         user_counts = df["user"].value_counts()
         item_counts = df["item"].value_counts()
@@ -30,7 +28,6 @@ def kcore_filter(df: pd.DataFrame, k: int = 10) -> pd.DataFrame:
 
 
 def remap_ids(df: pd.DataFrame) -> tuple[pd.DataFrame, dict, dict]:
-    """Remap string user/item IDs to contiguous integers starting from 0."""
     users = sorted(df["user"].unique())
     items = sorted(df["item"].unique())
     user2idx = {u: i for i, u in enumerate(users)}
@@ -46,14 +43,6 @@ def leave_one_out_split(
     n_neg: int = 99,
     seed: int = 42,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """
-    Leave-one-out split:
-      - Sort each user's history by timestamp
-      - Last interaction -> test positive
-      - Second-to-last -> val positive
-      - Rest -> train
-    Sample n_neg negatives per val/test user from items not in their history.
-    """
     rng = np.random.default_rng(seed)
     all_items = set(df["item_idx"].unique())
 
@@ -64,7 +53,6 @@ def leave_one_out_split(
     for user_idx, group in df.groupby("user_idx"):
         items = group["item_idx"].tolist()
         if len(items) < 3:
-            # Not enough interactions for leave-one-out; put everything in train
             for item in items:
                 train_rows.append({"user_idx": user_idx, "item_idx": item})
             continue
