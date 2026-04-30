@@ -1,11 +1,3 @@
-"""
-Preprocess raw datasets and save to data/processed/.
-
-Usage:
-  python scripts/preprocess.py --dataset beauty
-  python scripts/preprocess.py --dataset cds
-  python scripts/preprocess.py --dataset all
-"""
 import argparse
 import pickle
 from pathlib import Path
