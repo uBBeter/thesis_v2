@@ -1,14 +1,3 @@
-"""
-Download Amazon Beauty and Amazon CDs and Vinyl datasets.
-
-Both datasets are from the Amazon Reviews 2023 collection by McAuley Lab (UCSD).
-Source: https://amazon-reviews-2023.github.io/
-
-Usage:
-  python scripts/download_data.py --dataset beauty
-  python scripts/download_data.py --dataset cds
-  python scripts/download_data.py --dataset all
-"""
 import argparse
 from pathlib import Path
 import requests
