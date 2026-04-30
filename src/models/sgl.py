@@ -1,11 +1,3 @@
-"""
-SGL: Self-supervised Graph Learning for Recommendation
-Wu et al., 2021 (https://arxiv.org/abs/2010.10783)
-
-Extends LightGCN with self-supervised contrastive learning.
-Two augmented graph views are created via node dropout or edge dropout.
-An InfoNCE loss maximizes agreement between views for the same user/item.
-"""
 import numpy as np
 import torch
 import torch.nn as nn
@@ -18,7 +10,6 @@ from ..utils.helpers import EarlyStopping, save_checkpoint
 
 
 def _augment_edge_dropout(graph: Data, p: float, rng: np.random.Generator) -> Data:
-    """Randomly drop edges with probability p."""
     n_edges = graph.edge_index.size(1)
     keep = rng.random(n_edges) > p
     keep_t = torch.tensor(keep, device=graph.edge_index.device)
@@ -34,7 +25,6 @@ def _augment_edge_dropout(graph: Data, p: float, rng: np.random.Generator) -> Da
 
 def _augment_node_dropout(graph: Data, p: float, n_nodes: int,
                            rng: np.random.Generator) -> Data:
-    """Drop all edges incident to randomly dropped nodes."""
     keep_nodes = torch.tensor(rng.random(n_nodes) > p,
                               device=graph.edge_index.device)
     row, col = graph.edge_index
@@ -50,15 +40,10 @@ def _augment_node_dropout(graph: Data, p: float, n_nodes: int,
 
 
 class SGL(LightGCN):
-    """
-    SGL adds a contrastive loss on top of LightGCN.
-    Uses edge dropout augmentation by default (best in the paper).
-    """
-
     def __init__(self, n_users: int, n_items: int, dim: int = 64,
                  n_layers: int = 3, reg: float = 1e-4,
                  ssl_temp: float = 0.2, ssl_lambda: float = 0.1,
-                 aug_type: str = "edge",  # "edge" or "node"
+                 aug_type: str = "edge",
                  aug_ratio: float = 0.1):
         super().__init__(n_users, n_items, dim, n_layers, reg)
         self.ssl_temp = ssl_temp
@@ -68,16 +53,9 @@ class SGL(LightGCN):
 
     def _info_nce(self, z1: torch.Tensor, z2: torch.Tensor,
                   indices: torch.Tensor) -> torch.Tensor:
-        """
-        InfoNCE loss for user or item nodes.
-        z1, z2: full embedding matrices [n_nodes, dim]
-        indices: which nodes to compute loss for
-        """
         v1 = F.normalize(z1[indices], dim=1)
         v2 = F.normalize(z2[indices], dim=1)
-        # Positive pair: same node in two views
         pos = (v1 * v2).sum(dim=1) / self.ssl_temp
-        # All pairs within view1 as negatives
         neg = (v1 @ v2.T) / self.ssl_temp
         loss = -pos + torch.logsumexp(neg, dim=1)
         return loss.mean()
@@ -107,7 +85,6 @@ class SGL(LightGCN):
 
         for epoch in range(1, n_epochs + 1):
             self.train()
-            # Build two augmented views for this epoch (topology fixed, embeddings recomputed per batch)
             g1 = self._augment(graph, rng)
             g2 = self._augment(graph, rng)
 
