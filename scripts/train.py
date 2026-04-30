@@ -1,10 +1,3 @@
-"""
-Train a single model on a dataset.
-
-Usage:
-  python scripts/train.py --config configs/lightgcn.yaml --dataset beauty --device cpu
-  python scripts/train.py --config configs/sgl.yaml --dataset cds --device cuda
-"""
 import argparse
 import json
 import pickle
@@ -87,13 +80,11 @@ def main():
             patience=cfg.get("patience", 10),
         )
 
-    # Load best checkpoint before final evaluation
     if model_name != "als" and checkpoint_path and Path(checkpoint_path).exists():
         ckpt = torch.load(checkpoint_path, weights_only=False,
                           map_location=args.device)
         model.load_state_dict(ckpt["state_dict"])
 
-    # Final evaluation on test set
     metrics = model.evaluate(dataset.test)
     print(f"\n=== Test results [{model_name} / {args.dataset}] ===")
     for k, v in metrics.items():
@@ -106,4 +97,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
