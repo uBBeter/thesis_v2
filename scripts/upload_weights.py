@@ -1,11 +1,3 @@
-"""
-Upload trained checkpoints and metrics to HuggingFace Hub.
-
-Run this on the GPU instance after training completes:
-  python scripts/upload_weights.py --repo your-username/thesis-gnn-recsys
-
-The repo will be public so supervisors can download without an account.
-"""
 import argparse
 from pathlib import Path
 
@@ -16,8 +8,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True,
                         help="HuggingFace repo ID, e.g. your-username/thesis-gnn-recsys")
-    parser.add_argument("--private", action="store_true",
-                        help="Make the repo private (supervisors will need HF account)")
+    parser.add_argument("--private", action="store_true")
     args = parser.parse_args()
 
     api = HfApi()
