@@ -5,7 +5,6 @@ from pathlib import Path
 
 
 def load_amazon(path: str | Path) -> pd.DataFrame:
-    """Load Amazon review JSON/JSON.GZ into a DataFrame with columns: user, item, rating, timestamp."""
     path = Path(path)
     records = []
     opener = gzip.open if path.suffix == ".gz" else open
