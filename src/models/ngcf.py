@@ -25,7 +25,7 @@ class NGCFConv(nn.Module):
         agg = torch.zeros_like(x)
         agg.scatter_add_(0, col.unsqueeze(1).expand(-1, x.size(1)),
                          edge_weight.unsqueeze(1) * x[row])
-        out = self.act(self.W1(agg) + self.W2(agg * x))
+        out = self.act(self.W1(agg + x) + self.W2(agg * x))
         return self.dropout(out)
 
 
