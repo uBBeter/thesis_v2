@@ -30,9 +30,7 @@ class SimGCL(LightGCN):
             agg.scatter_add_(0, col.unsqueeze(1).expand(-1, x.size(1)),
                              edge_weight.unsqueeze(1) * x[row])
             x = agg
-            noise = torch.sign(x) * F.normalize(
-                torch.rand_like(x), dim=1
-            ) * self.noise_eps
+            noise = F.normalize(torch.randn_like(x), dim=1) * self.noise_eps
             x = x + noise
             all_embs.append(x)
         return torch.stack(all_embs, dim=0).mean(dim=0)
