@@ -20,6 +20,10 @@ DATASETS = {
         ),
         "dest": RAW_DIR / "cds" / "CDs_and_Vinyl.jsonl.gz",
     },
+    "steam": {
+        "url": "https://cseweb.ucsd.edu/~jmcauley/datasets/steam/steam_reviews.json.gz",
+        "dest": RAW_DIR / "steam" / "steam_reviews.json.gz",
+    },
 }
 
 
