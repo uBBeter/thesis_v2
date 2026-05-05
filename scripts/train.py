@@ -46,7 +46,7 @@ def build_model(cfg: dict, n_users: int, n_items: int):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
-    parser.add_argument("--dataset", choices=["toys", "cds"], required=True)
+    parser.add_argument("--dataset", choices=["toys", "cds", "steam"], required=True)
     parser.add_argument("--device", default="cpu")
     args = parser.parse_args()
 
