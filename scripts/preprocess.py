@@ -56,16 +56,17 @@ def process(name: str, df_loader, out_name: str):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", choices=["toys", "cds", "all"], default="all")
+    parser.add_argument("--dataset", choices=["toys", "cds", "steam", "all"], default="all")
     args = parser.parse_args()
 
     targets = list(RAW_FILES.keys()) if args.dataset == "all" else [args.dataset]
     for key in targets:
         raw = RAW_FILES[key]
+        loader = LOADERS[key]
         if not raw.exists():
             print(f"Not found: {raw}. Run: python scripts/download_data.py --dataset {key}")
         else:
-            process(DISPLAY_NAMES[key], lambda p=raw: load_amazon(p), key)
+            process(DISPLAY_NAMES[key], lambda p=raw, l=loader: l(p), key)
 
 
 if __name__ == "__main__":
