@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 RESULTS_DIR = Path("results")
 CONFIGS_DIR = Path("configs/tuned")
-DATASETS = ["toys", "cds"]
+DATASETS = ["toys", "cds", "steam"]
 MODELS = ["als", "ngcf", "lightgcn", "sgl", "simgcl"]
 
 
