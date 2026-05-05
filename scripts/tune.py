@@ -162,7 +162,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", required=True,
                         choices=["als", "ngcf", "lightgcn", "sgl", "simgcl"])
-    parser.add_argument("--dataset", required=True, choices=["toys", "cds"])
+    parser.add_argument("--dataset", required=True, choices=["toys", "cds", "steam"])
     parser.add_argument("--n-trials", type=int, default=40)
     parser.add_argument("--device", default="cpu")
     args = parser.parse_args()
