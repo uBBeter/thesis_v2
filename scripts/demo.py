@@ -57,7 +57,7 @@ def build_model(cfg: dict, n_users: int, n_items: int):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", required=True, choices=list(MODEL_REGISTRY))
-    parser.add_argument("--dataset", required=True, choices=["toys", "cds"])
+    parser.add_argument("--dataset", required=True, choices=["toys", "cds", "steam"])
     parser.add_argument("--config", required=True)
     parser.add_argument("--hf-repo", default=None)
     parser.add_argument("--users", nargs="+", type=int, default=None)
