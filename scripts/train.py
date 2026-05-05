@@ -9,7 +9,6 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.data.graph import build_graph
 from src.models.als import ALSRecommender
 from src.models.ngcf import NGCF
 from src.models.lightgcn import LightGCN
