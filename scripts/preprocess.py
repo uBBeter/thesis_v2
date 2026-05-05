@@ -5,7 +5,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.data.loader import load_amazon
+from src.data.loader import load_amazon, load_steam
 from src.data.preprocessor import build_dataset
 from src.data.graph import build_graph
 import torch
@@ -16,11 +16,19 @@ OUT_DIR = Path("data/processed")
 RAW_FILES = {
     "toys": RAW_DIR / "toys" / "Toys_and_Games.jsonl.gz",
     "cds": RAW_DIR / "cds" / "CDs_and_Vinyl.jsonl.gz",
+    "steam": RAW_DIR / "steam" / "steam_reviews.json.gz",
+}
+
+LOADERS = {
+    "toys": load_amazon,
+    "cds": load_amazon,
+    "steam": load_steam,
 }
 
 DISPLAY_NAMES = {
     "toys": "Amazon Toys and Games",
     "cds": "Amazon CDs and Vinyl",
+    "steam": "Steam Game Store",
 }
 
 
